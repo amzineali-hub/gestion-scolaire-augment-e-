@@ -227,6 +227,21 @@ export default function Communicator({ students, classes, schoolName }: Communic
           text: activeTemplate.message
         })
       });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         const text = await response.text();
+         console.error("Server returned non-JSON:", text.substring(0, 100));
+         setSendResult({ type: 'email', success: false, message: 'La session a expiré ou le serveur est indisponible. Veuillez rafraîchir la page.'});
+         return;
+      }
+      
+      if (!response.ok) {
+         const data = await response.json();
+         setSendResult({ type: 'email', success: false, message: `Erreur ${response.status}: ` + (data.error || 'Erreur serveur')});
+         return;
+      }
+      
       const data = await response.json();
       if (data.success) {
          setSendResult({ type: 'email', success: true, message: 'E-mail envoyé avec succès (Serveur) !'});
@@ -234,6 +249,7 @@ export default function Communicator({ students, classes, schoolName }: Communic
          setSendResult({ type: 'email', success: false, message: 'Erreur: ' + data.error});
       }
     } catch (e: any) {
+      console.error(e);
       setSendResult({ type: 'email', success: false, message: 'Erreur de connexion au serveur.'});
     } finally {
       setSendingEmail(false);
@@ -268,6 +284,21 @@ export default function Communicator({ students, classes, schoolName }: Communic
           message: activeTemplate.message
         })
       });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         const text = await response.text();
+         console.error("Server returned non-JSON:", text.substring(0, 100));
+         setSendResult({ type: 'whatsapp', success: false, message: 'La session a expiré ou le serveur est indisponible. Veuillez rafraîchir la page.'});
+         return;
+      }
+      
+      if (!response.ok) {
+         const data = await response.json();
+         setSendResult({ type: 'whatsapp', success: false, message: `Erreur ${response.status}: ` + (data.error || 'Erreur serveur')});
+         return;
+      }
+      
       const data = await response.json();
       if (data.success) {
          setSendResult({ type: 'whatsapp', success: true, message: 'Message WhatsApp envoyé avec succès (Twilio) !'});
@@ -275,6 +306,7 @@ export default function Communicator({ students, classes, schoolName }: Communic
          setSendResult({ type: 'whatsapp', success: false, message: 'Erreur: ' + data.error});
       }
     } catch (e: any) {
+      console.error(e);
       setSendResult({ type: 'whatsapp', success: false, message: 'Erreur de connexion au serveur.'});
     } finally {
       setSendingWhatsApp(false);

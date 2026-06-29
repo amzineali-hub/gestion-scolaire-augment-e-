@@ -13,8 +13,32 @@ async function startServer() {
   app.use(express.json());
 
   // API Routes
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", message: "Server is running on Google Cloud Run" });
+  app.get("/api/health", async (req, res) => {
+    let smtpOk = false;
+    let smtpError = "";
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          }
+        });
+        await transporter.verify();
+        smtpOk = true;
+      } catch (e: any) {
+        smtpError = e.message;
+      }
+    }
+
+    res.json({ 
+      status: "ok", 
+      message: "Server is running on Google Cloud Run",
+      smtpOk,
+      smtpError,
+      envKeys: Object.keys(process.env).filter(k => k.includes('SMTP') || k.includes('SMT') || k.includes('TWILIO'))
+    });
   });
 
   // Example backend route to demonstrate API usage
