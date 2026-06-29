@@ -76,6 +76,48 @@ export default function StudentManager({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  const handlePrintDoc = (elementId: string, title: string) => {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const printWindow = window.open('', '', 'width=800,height=900');
+    if (!printWindow) return;
+    
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map(s => s.outerHTML)
+      .join('\n');
+      
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title}</title>
+          ${styles}
+          <style>
+            @media print {
+              body, html { padding: 0 !important; margin: 0 !important; background: white !important; }
+              @page { margin: 10mm; }
+              * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            }
+            body { padding: 24px; background: white; }
+          </style>
+        </head>
+        <body class="bg-white">
+          ${el.innerHTML}
+          <div class="no-print" style="margin-top: 40px; text-align: center; padding: 20px;">
+            <button onclick="window.print()" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              Lancer l'impression
+            </button>
+          </div>
+          <style>@media print { .no-print { display: none !important; } }</style>
+          <script>
+            setTimeout(() => { window.print(); }, 500);
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   // Modal states
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -429,7 +471,7 @@ export default function StudentManager({
 
           {/* Export PDF Button */}
           <button
-            onClick={() => window.print()}
+            onClick={() => handlePrintDoc("student-list-print-area", "Liste_Eleves")}
             className="bg-white hover:bg-slate-50 text-indigo-700 font-bold py-2 px-3.5 rounded-xl text-xs border border-indigo-200 flex items-center gap-1.5 shadow-xs transition duration-150 cursor-pointer"
           >
             <Printer className="h-3.5 w-3.5" />
@@ -514,7 +556,7 @@ export default function StudentManager({
       </div>
 
       {/* Main Grid display of students */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" id="student-list-print-area">
         {filteredStudents.length > 0 ? (
           <>
             <div className="overflow-x-auto">
@@ -1177,7 +1219,7 @@ export default function StudentManager({
                  <div className="space-y-2 pt-3 border-t border-slate-100">
                    <button
                      type="button"
-                     onClick={() => window.print()}
+                     onClick={() => handlePrintDoc("school-bulletin-print-area", `Bulletin_${selectedStudentForBulletin?.firstName}`)}
                      className="w-full py-2.5 rounded-xl text-xs text-white bg-emerald-600 hover:bg-emerald-700 font-extrabold flex items-center justify-center gap-2 transition hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-md"
                    >
                      <Printer className="h-4 w-4" /> Exporter en bulletin PDF

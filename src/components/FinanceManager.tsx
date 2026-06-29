@@ -57,6 +57,48 @@ export default function FinanceManager({
   const [reminderNotification, setReminderNotification] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isExportingCSV, setIsExportingCSV] = useState(false);
 
+  const handlePrintDoc = (elementId: string, title: string) => {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const printWindow = window.open('', '', 'width=800,height=900');
+    if (!printWindow) return;
+    
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map(s => s.outerHTML)
+      .join('\n');
+      
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title}</title>
+          ${styles}
+          <style>
+            @media print {
+              body, html { padding: 0 !important; margin: 0 !important; background: white !important; }
+              @page { margin: 10mm; }
+              * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            }
+            body { padding: 24px; background: white; }
+          </style>
+        </head>
+        <body class="bg-white">
+          ${el.innerHTML}
+          <div class="no-print" style="margin-top: 40px; text-align: center; padding: 20px;">
+            <button onclick="window.print()" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-family: sans-serif; font-weight: bold; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              Lancer l'impression
+            </button>
+          </div>
+          <style>@media print { .no-print { display: none !important; } }</style>
+          <script>
+            setTimeout(() => { window.print(); }, 500);
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const handleExportCSV = () => {
     setIsExportingCSV(true);
     setTimeout(() => {
@@ -994,7 +1036,7 @@ export default function FinanceManager({
                 <button
                   type="button"
                   onClick={() => {
-                    window.print();
+                    handlePrintDoc("school-receipt-print-area", isPaid ? "Quittance de Paiement" : "Facture");
                   }}
                   className="px-4 py-1.5 rounded-lg text-xs text-white bg-emerald-600 hover:bg-emerald-700 font-bold flex items-center gap-1.5 transition shadow cursor-pointer font-sans"
                 >
@@ -1084,7 +1126,7 @@ export default function FinanceManager({
                   <button
                     type="button"
                     onClick={() => {
-                      window.print();
+                      handlePrintDoc("school-report-print-area", "Releve_Financier");
                     }}
                     className="w-full py-2.5 rounded-xl text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-extrabold flex items-center justify-center gap-2 transition hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-md"
                   >
