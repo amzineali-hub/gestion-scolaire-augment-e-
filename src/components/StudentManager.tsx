@@ -107,6 +107,21 @@ export default function StudentManager({
           }))
         })
       });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         const text = await response.text();
+         console.error("Server returned non-JSON:", text.substring(0, 100));
+         setEmailResult({ success: false, message: 'La session a expiré ou le serveur est indisponible. Veuillez rafraîchir la page.' });
+         return;
+      }
+      
+      if (!response.ok) {
+         const data = await response.json();
+         setEmailResult({ success: false, message: `Erreur ${response.status}: ` + (data.error || 'Erreur serveur') });
+         return;
+      }
+      
       const data = await response.json();
       if (data.success) {
          setEmailResult({ success: true, message: 'Bulletin envoyé par email avec succès !' });
@@ -114,6 +129,7 @@ export default function StudentManager({
          setEmailResult({ success: false, message: 'Erreur: ' + data.error });
       }
     } catch (e: any) {
+      console.error(e);
       setEmailResult({ success: false, message: 'Erreur de connexion au serveur.' });
     } finally {
       setIsSendingEmail(false);

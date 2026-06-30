@@ -21,6 +21,7 @@ import {
 // Import modules
 import Dashboard from "./components/Dashboard";
 import StudentManager from "./components/StudentManager";
+import BulletinsManager from "./components/BulletinsManager";
 import TeacherManager from "./components/TeacherManager";
 import ClassCourseManager from "./components/ClassCourseManager";
 import SchedulePlanner from "./components/SchedulePlanner";
@@ -56,7 +57,8 @@ import {
   QrCode,
   Cloud,
   Search,
-  Compass
+  Compass,
+  FileText
 } from "lucide-react";
 
 // Programmatic generators for 500 Moroccan students and 50 teachers
@@ -227,6 +229,7 @@ const generateSimulatedInvoices = (students: Student[]): Invoice[] => {
 
 const APP_TAGS = [
   { tab: "dashboard", keywords: ["accueil", "tableau de bord", "principal", "statistiques", "stats", "dashboard"], labelFr: "Tableau de bord de l'école", labelAr: "لوحة التحكم", icon: "LayoutDashboard" },
+  { tab: "bulletins", keywords: ["bulletin", "bulletins", "note", "notes", "resultats", "évaluation", "examens"], labelFr: "Gestion des Bulletins & Notes", labelAr: "النتائج والامتحانات", icon: "FileText" },
   { tab: "students", keywords: ["eleve", "eleves", "etudiant", "etudiants", "apprenant", "apprenants", "scolarite", "student", "students"], labelFr: "Gestion des Élèves & Inscriptions", labelAr: "إدارة التلاميذ", icon: "Users" },
   { tab: "teachers", keywords: ["prof", "profs", "professeur", "professeurs", "enseignant", "enseignants", "instituteur", "instituteurs", "teacher", "teachers"], labelFr: "Gestion des Enseignants & Spécialités", labelAr: "إدارة الأساتذة", icon: "GraduationCap" },
   { tab: "classes", keywords: ["classe", "classes", "salle", "salles", "cycle", "cycles", "cours", "matiere", "matieres", "niveaux"], labelFr: "Gestion des Classes & Matières", labelAr: "الأقسام والمواد", icon: "School" },
@@ -831,6 +834,21 @@ export default function App() {
                 <ChevronRight className={`h-3 w-3 opacity-60 transition-transform ${activeTab === "dashboard" ? "translate-x-0.5" : ""}`} />
               </button>
 
+              {/* Bulletins */}
+              <button
+                onClick={() => navigateToTab("bulletins")}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-200 ${
+                  activeTab === "bulletins" 
+                    ? "bg-gradient-to-r from-indigo-600 to-teal-500 text-white shadow-lg shadow-indigo-200/50 scale-[1.02]" 
+                    : "text-black hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1"
+                }`}
+              >
+                <span className="flex items-center gap-2.5">
+                  <FileText className="h-4 w-4" /> Bulletins
+                </span>
+                <ChevronRight className={`h-3 w-3 opacity-60 transition-transform ${activeTab === "bulletins" ? "translate-x-0.5" : ""}`} />
+              </button>
+
               {/* Students */}
               <button
                 onClick={() => navigateToTab("students")}
@@ -1024,6 +1042,16 @@ export default function App() {
               setActiveTab={navigateToTab}
               lang={lang}
             />
+          )}
+
+          {activeTab === "bulletins" && (
+            <RoleGuard allowedRoles={['admin', 'secretariat', 'enseignant']}>
+              <BulletinsManager 
+                students={students} 
+                classes={classes} 
+                subjects={subjects}
+              />
+            </RoleGuard>
           )}
 
           {activeTab === "students" && (
